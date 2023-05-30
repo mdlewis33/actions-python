@@ -17,8 +17,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/setup-node@v3
     - name: Download lint artifact
       uses: actions/download-artifact@v3
       with:
-        name: python-lint
+        name: python-lint-results-${{ matrix.python-version }}
