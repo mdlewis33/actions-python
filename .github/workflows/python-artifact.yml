@@ -14,6 +14,30 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Get an artifact
+    - name: List workflow runs
       run: |
-        curl -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.TOKEN_ACTIONS_PYTHON }}" -H "X-GitHub-Api-Version: 2022-11-28" https://api.github.com/repos/mdlewis33/actions-python/actions/artifacts/721720687
+        curl -L \
+        -H "Accept: application/vnd.github+json" \
+        -H "Authorization: Bearer ${{ secrets.TOKEN_ACTIONS_PYTHON }}" \
+        -H "X-GitHub-Api-Version: 2022-11-28" \
+        https://api.github.com/repos/${{ github.repository }}/actions/runs?per_page=2 -o recent.json
+    - name: Store most recent workflow run ID
+      id: workflow
+      run: |
+        echo "::set-output name=id::$(cat recent.json | jq ".workflow_runs[1].id")"
+    - name: Fetch workflow logs from GitHub API
+      id: curl
+      run: |
+        curl -L \
+        -H "Accept: application/vnd.github+json" \
+        -H "Authorization: Bearer ${{ secrets.TOKEN_ACTIONS_PYTHON }}" \
+        -H "X-GitHub-Api-Version: 2022-11-28" https://api.github.com/repos/${{ github.repository }}/actions/artifacts/${{ steps.workflow.outputs.id }}/zip \
+        --output ./artifacts/artifact-${{ steps.workflow.outputs.id }}.zip
+    - name: Commit and push to GitHub
+      run: |
+        git config user.name "Automated"
+        git config user.email "actions@users.noreply.github.com"
+        git add *.zip
+        timestamp=$(date -u)
+        git commit -m "Latest artifacts: ${timestamp}" || exit 0
+        git push
