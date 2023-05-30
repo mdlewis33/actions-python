@@ -22,3 +22,5 @@ class ShoppingCart:
         for item in self.items:
             total_price += price_map.get(item)
         return total_price
+
+
