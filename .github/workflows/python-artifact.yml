@@ -31,7 +31,7 @@ jobs:
     - name: Get artifact ID
       id: get-artifact
       run: |
-        artifact_id=$(jq -r '.workflow_runs[0].artifacts[0].id' recent.json)
+        artifact_id=$(jq -r '.workflow_runs[0].artifacts | map(.id) | .[]' recent.json | head -n 1)
         echo "::set-output name=artifact_id::$artifact_id"
     - name: Fetch workflow artifact from GitHub REST API
       id: fetch-artifact
