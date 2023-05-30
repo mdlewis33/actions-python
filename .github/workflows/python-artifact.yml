@@ -21,4 +21,4 @@ jobs:
     - name: Download lint artifact
       uses: actions/download-artifact@v3
       with:
-        name: python-lint-results-${{ matrix.python-version }}
+        name: python-lint
