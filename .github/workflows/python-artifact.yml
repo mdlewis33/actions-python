@@ -1,0 +1,23 @@
+name: Python artifact
+
+on:
+  workflow_run:
+    workflows: [ Python unit test ]
+    types:
+      - completed
+  workflow_dispatch:
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Download workflow artifact
+      uses: dawidd6/action-download-artifact@v2.27.0
+      with:
+        workflow: python-lint.yml
