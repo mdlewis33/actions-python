@@ -17,6 +17,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - uses: actions/setup-node@v3
     - name: Download workflow artifact
       uses: dawidd6/action-download-artifact@v2.27.0
       with:
