@@ -20,10 +20,16 @@ jobs:
           -H "Accept: application/vnd.github.v3+json" $WORKFLOWS_URL)
           echo "::set-output name=workflow-runs::$WORKFLOWS_RESPONSE"
 
+      - name: Set workflow runs
+        run: |
+          echo "WORKFLOW_RUNS=${{ steps.workflow-runs.outputs.workflow-runs }}" >> $GITHUB_ENV
+
       - name: Download artifacts
         id: download
+        env:
+          WORKFLOW_RUNS: ${{ steps.set-workflow-runs.outputs.workflow-runs }}
         run: |
-          WORKFLOWS=$(echo "${{ steps.workflow-runs.outputs.workflow-runs }}")
+          WORKFLOWS=$(echo "$WORKFLOW_RUNS")
           NUM_WORKFLOWS=$(echo "$WORKFLOWS" | jq '.workflows | length')
           MAX_WORKFLOWS=3  # Set the desired number of workflows to check
 
