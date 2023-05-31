@@ -6,8 +6,6 @@ on:
 permissions:
   contents: write
 
-
-
 jobs:
   build:
 
@@ -36,4 +34,4 @@ jobs:
         timestamp=$(date -u)
         git commit -m "Latest artifacts: ${timestamp}" || exit 0
         git push
-  
+        
