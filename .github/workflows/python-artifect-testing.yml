@@ -26,7 +26,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.TOKEN_ACTIONS_PYTHON }}
         repository: ${{ github.repository }}
     - run: |
-        ${{ steps.result.outputs.artifacts }} | jq '.id[]' > $FILE_NAME
+        ${{ steps.result.outputs.artifacts }} > $FILE_NAME
 
     - name: Commit and push to GitHub
       run: |
