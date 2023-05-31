@@ -24,7 +24,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.TOKEN_ACTIONS_PYTHON }}
         repository: ${{ github.repository }}
     - run: |
-        ${{ steps.result.outputs.artifacts }} 
+        echo "${{ steps.result.outputs.artifacts }}"
     - run: |
-      echo "${{ github.repository.workflow.name }}"
+        echo "${{ github.repository.workflow.name }}"
         
