@@ -1,0 +1,56 @@
+name: Collect Artifacts
+
+on:
+  workflow_dispatch:
+
+jobs:
+  collect-artifacts:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Get workflow runs
+        id: workflow-runs
+        run: |
+          TOKEN=${{ secrets.TOKEN_ACTIONS_PYTHON }}
+          REPO_API_URL=$(jq -r '.repository_url' $GITHUB_EVENT_PATH)
+          WORKFLOWS_URL="${REPO_API_URL}/actions/workflows"
+          WORKFLOWS_RESPONSE=$(curl -s -H "Authorization: Bearer $TOKEN" \
+          -H "Accept: application/vnd.github.v3+json" $WORKFLOWS_URL)
+          echo "::set-output name=workflow-runs::$WORKFLOWS_RESPONSE"
+
+      - name: Download artifacts
+        id: download
+        run: |
+          WORKFLOWS=$(echo "${{ steps.workflow-runs.outputs.workflow-runs }}")
+          WORKFLOW_IDS=($(echo "$WORKFLOWS" | jq -r '.workflows[].id'))
+
+          for WORKFLOW_ID in "${WORKFLOW_IDS[@]}"; do
+            ARTIFACTS_URL="${REPO_API_URL}/actions/workflows/${WORKFLOW_ID}/runs"
+            ARTIFACTS_RESPONSE=$(curl -s -H "Authorization: Bearer $TOKEN" -H "Accept: application/vnd.github.v3+json" $ARTIFACTS_URL)
+            RUN_IDS=($(echo "$ARTIFACTS_RESPONSE" | jq -r '.workflow_runs[].id'))
+
+            for RUN_ID in "${RUN_IDS[@]}"; do
+              RUN_ARTIFACTS_URL="${REPO_API_URL}/actions/runs/${RUN_ID}/artifacts"
+              RUN_ARTIFACTS_RESPONSE=$(curl -s -H "Authorization: Bearer $TOKEN" -H "Accept: application/vnd.github.v3+json" $RUN_ARTIFACTS_URL)
+              ARTIFACT_PATHS=($(echo "$RUN_ARTIFACTS_RESPONSE" | jq -r '.artifacts[].archive_download_url'))
+
+              for ARTIFACT_PATH in "${ARTIFACT_PATHS[@]}"; do
+                ARTIFACT_NAME=$(basename "$ARTIFACT_PATH")
+                wget -q --header="Authorization: Bearer $TOKEN" -O "./artifacts/${ARTIFACT_NAME}" $ARTIFACT_PATH
+                echo "::set-output name=artifactPaths::./artifacts/${ARTIFACT_NAME}"
+              done
+            done
+          done
+      
+      - name: Create zip file
+        run: zip -r ./all_artifacts.zip ./*
+
+      - name: Commit and push zip
+        run: |
+          git config user.name "Automated"
+          git config user.email "actions@users.noreply.github.com"
+          git add ./*.zip
+          git commit -m "Save artifacts"
+          git push
