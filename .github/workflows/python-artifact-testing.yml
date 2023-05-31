@@ -24,26 +24,38 @@ jobs:
         id: download
         run: |
           WORKFLOWS=$(echo "${{ steps.workflow-runs.outputs.workflow-runs }}")
-          WORKFLOW_IDS=($(echo "$WORKFLOWS" | jq -r '.workflows[].id'))
+          NUM_WORKFLOWS=$(echo "$WORKFLOWS" | jq '.workflows | length')
+          MAX_WORKFLOWS=3  # Set the desired number of workflows to check
 
-          for WORKFLOW_ID in "${WORKFLOW_IDS[@]}"; do
-            ARTIFACTS_URL="${REPO_API_URL}/actions/workflows/${WORKFLOW_ID}/runs"
+          for ((i=0; i<NUM_WORKFLOWS && i<MAX_WORKFLOWS; i++)); do
+            WORKFLOW_ID=$(echo "$WORKFLOWS" | jq -r ".workflows[$i].id")
+            ARTIFACTS_URL="${REPO_API_URL}/actions/workflows/${WORKFLOW_ID}/runs?per_page=1&page=1"
             ARTIFACTS_RESPONSE=$(curl -s -H "Authorization: Bearer $TOKEN" -H "Accept: application/vnd.github.v3+json" $ARTIFACTS_URL)
-            RUN_IDS=($(echo "$ARTIFACTS_RESPONSE" | jq -r '.workflow_runs[].id'))
+            
+            if [ -z "$ARTIFACTS_RESPONSE" ]; then
+              echo "Failed to retrieve workflow runs for workflow ID: $WORKFLOW_ID"
+              exit 1
+            fi
+            
+            RUN_ID=$(echo "$ARTIFACTS_RESPONSE" | jq -r '.workflow_runs[0].id')
 
-            for RUN_ID in "${RUN_IDS[@]}"; do
-              RUN_ARTIFACTS_URL="${REPO_API_URL}/actions/runs/${RUN_ID}/artifacts"
-              RUN_ARTIFACTS_RESPONSE=$(curl -s -H "Authorization: Bearer $TOKEN" -H "Accept: application/vnd.github.v3+json" $RUN_ARTIFACTS_URL)
-              ARTIFACT_PATHS=($(echo "$RUN_ARTIFACTS_RESPONSE" | jq -r '.artifacts[].archive_download_url'))
-
-              for ARTIFACT_PATH in "${ARTIFACT_PATHS[@]}"; do
-                ARTIFACT_NAME=$(basename "$ARTIFACT_PATH")
-                wget -q --header="Authorization: Bearer $TOKEN" -O "./artifacts/${ARTIFACT_NAME}" $ARTIFACT_PATH
-                echo "::set-output name=artifactPaths::./artifacts/${ARTIFACT_NAME}"
-              done
+            RUN_ARTIFACTS_URL="${REPO_API_URL}/actions/runs/${RUN_ID}/artifacts"
+            RUN_ARTIFACTS_RESPONSE=$(curl -s -H "Authorization: Bearer $TOKEN" -H "Accept: application/vnd.github.v3+json" $RUN_ARTIFACTS_URL)
+            
+            if [ -z "$RUN_ARTIFACTS_RESPONSE" ]; then
+              echo "Failed to retrieve artifacts for run ID: $RUN_ID"
+              exit 1
+            fi
+            
+            ARTIFACT_PATHS=($(echo "$RUN_ARTIFACTS_RESPONSE" | jq -r '.artifacts[].archive_download_url'))
+            
+            for ARTIFACT_PATH in "${ARTIFACT_PATHS[@]}"; do
+              ARTIFACT_NAME=$(basename "$ARTIFACT_PATH")
+              wget -q --header="Authorization: Bearer $TOKEN" -O "./artifacts/${ARTIFACT_NAME}" $ARTIFACT_PATH
+              echo "::set-output name=artifactPaths::./artifacts/${ARTIFACT_NAME}"
             done
           done
-      
+
       - name: Create zip file
         run: zip -r ./all_artifacts.zip ./*
 
