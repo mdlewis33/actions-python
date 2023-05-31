@@ -16,5 +16,5 @@ jobs:
       with:
         GITHUB_TOKEN: ${{ secrets.TOKEN_ACTIONS_PYTHON }}
         repository: ${{ github.repository }}
-    - run: echo "${{ steps.result.outputs.artifacts }}"
+    - run: echo "${{ steps.result.outputs.artifacts }} | jq '.id[]'"
   
