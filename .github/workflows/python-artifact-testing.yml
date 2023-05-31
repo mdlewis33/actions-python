@@ -3,6 +3,9 @@ name: Collect Artifacts
 on:
   workflow_dispatch:
 
+permissions:
+    contents: write
+
 jobs:
   collect-artifacts:
     runs-on: ubuntu-latest
