@@ -11,8 +11,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: get artifacts
+      id: result
       uses: MichaelMelena/list-artifacts@v1.0.1
       with:
         GITHUB_TOKEN: ${{ secrets.TOKEN_ACTIONS_PYTHON }}
         repository: ${{ github.repository }}
+    - run: echo "${{ steps.result.outputs.artifacts }}"
   
