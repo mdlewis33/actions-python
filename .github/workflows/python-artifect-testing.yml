@@ -26,5 +26,5 @@ jobs:
     - run: |
         echo "${{ steps.result.outputs.artifacts }}"
     - run: |
-        echo "${{ github.repository.workflow.name }}"
+        echo "${{ github.workflow }}"
         
