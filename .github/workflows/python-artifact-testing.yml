@@ -14,7 +14,7 @@ jobs:
         id: workflow-runs
         run: |
           TOKEN=${{ secrets.TOKEN_ACTIONS_PYTHON }}
-          REPO_API_URL=$(jq -r '.repository_url' $GITHUB_EVENT_PATH)
+          REPO_API_URL="https://api.github.com/repos/${{ github.repository }}"
           WORKFLOWS_URL="${REPO_API_URL}/actions/workflows"
           WORKFLOWS_RESPONSE=$(curl -s -H "Authorization: Bearer $TOKEN" \
           -H "Accept: application/vnd.github.v3+json" $WORKFLOWS_URL)
