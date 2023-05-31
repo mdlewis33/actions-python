@@ -24,14 +24,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.TOKEN_ACTIONS_PYTHON }}
         repository: ${{ github.repository }}
     - run: |
-        ${{ steps.result.outputs.artifacts }} > $FILE_NAME
-
-    - name: Commit and push to GitHub
-      run: |
-        git config user.name "Automated"
-        git config user.email "actions@users.noreply.github.com"
-        git add ./artifacts/$FILE_NAME
-        timestamp=$(date -u)
-        git commit -m "Latest artifacts: ${timestamp}" || exit 0
-        git push
+        ${{ steps.result.outputs.artifacts }} 
+    - run: |
+      echo "${{ github.repository.workflow.name }}"
         
