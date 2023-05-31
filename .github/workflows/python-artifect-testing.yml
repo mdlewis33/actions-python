@@ -1,0 +1,20 @@
+name: Test workflow
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up
+      run: |
+        CURL_URL="-H "Authorization: ${{ secrets.TOKEN_ACTIONS_PYTHON }}" -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/mdlewis33/actions-python/actions/workflows"
+
+        MAX_WORKFLOWS="curl ${CURL_URL} | jq '.total_count'"
+
+        for ((i=0; i<${MAX_WORKFLOWS; i++}))
+          curl ${CURL_URL} | jq '.workflows[i].id'
