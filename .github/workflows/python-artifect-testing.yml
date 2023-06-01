@@ -20,7 +20,7 @@ jobs:
       with:
         GITHUB_TOKEN: ${{ secrets.TOKEN_ACTIONS_PYTHON }}
 
-    - run: echo ${{ steps.get-artifact.outputs.artifacts }}
+    - run: echo ${{ secrets.TOKEN_ACTIONS_PYTHON }}
 
 
       
