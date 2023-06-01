@@ -27,5 +27,7 @@ jobs:
       run: |
         echo "id=$(cat recent.json | jq ".workflow_runs[0].id")" >> $GITHUB_OUTPUT
 
+    - run: echo ${{ steps.workflow-id.outputs.id }}
+
       
         
