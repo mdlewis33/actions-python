@@ -26,12 +26,36 @@ jobs:
       id: workflow1
       run: echo "id1=$(cat recent.json | jq ".workflow_runs[0].id")" >> "$GITHUB_OUTPUT"
 
-    - name: Store most recent workflow run ID
+    - name: Store 2nd most recent workflow run ID
       id: workflow2
       run: echo "id2=$(cat recent.json | jq ".workflow_runs[1].id")" >> "$GITHUB_OUTPUT"
 
-    - name: Get most recent workflow run ID
-      run: echo "${{ steps.workflow1.outputs.id1 }}, ${{ steps.workflow2.outputs.id2 }}"
+    - name: Fetch workflow logs using GitHub API
+      id: curl1
+      run: |
+        curl -L \
+        -H "Accept: application/vnd.github+json" \
+        -H "Authorization: Bearer ${{ secrets.TOKEN_ACTIONS_PYTHON }}" \
+        -H "X-GitHub-Api-Version: 2022-11-28" \
+        https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ steps.workflow1.outputs.id1 }}/logs --output ./log-${{ steps.workflow1.outputs.id1 }}.zip
+
+    - name: Fetch 2nd workflow logs using GitHub API
+      id: curl2
+      run: |
+        curl -L \
+        -H "Accept: application/vnd.github+json" \
+        -H "Authorization: Bearer ${{ secrets.TOKEN_ACTIONS_PYTHON }}" \
+        -H "X-GitHub-Api-Version: 2022-11-28" \
+        https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ steps.workflow2.outputs.id2 }}/logs --output ./log-${{ steps.workflow2.outputs.id2 }}.zip
+
+    - name: Commit and push to GitHub
+      run: |
+        git config user.name "Automated"
+        git config user.email "actions@users.noreply.github.com"
+        git add ./logs/*.zip
+        timestamp=$(date -u)
+        git commit -m "Latest logs: ${timestamp}" || exit 0
+        git push
 
 
       
