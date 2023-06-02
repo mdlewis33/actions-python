@@ -24,7 +24,7 @@ jobs:
 
     - name: Store most recent workflow run ID
       id: workflow
-      run: echo "id=$(cat recent.json | jq ".workflow_runs[0].id) >> $GITHUB_OUTPUT"
+      run: echo "id=$(cat recent.json | jq ".workflow_runs[0].id")" >> "$GITHUB_OUTPUT"
 
     - name: Get most recent workflow run ID
       run: echo ${{ steps.workflow.outputs.id }}
