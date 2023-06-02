@@ -1,6 +1,10 @@
 name: Get last 2 most recent workflow logs
 
 on:
+  workflow_run:
+    workflows: [ Python unit test ]
+    types:
+      - completed
   workflow_dispatch:
 
 permissions:
@@ -56,7 +60,4 @@ jobs:
         timestamp=$(date -u)
         git commit -m "Latest logs: ${timestamp}" || exit 0
         git push
-
-
-      
-        
+             
