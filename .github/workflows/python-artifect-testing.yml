@@ -28,7 +28,7 @@ jobs:
 
     - name: Store most recent workflow run ID
       id: workflow1
-      run: echo "id1=$(cat recent.json | jq ".workflow_runs[0].id")" >> "$GITHUB_OUTPUT"
+      run: echo "id1=$(cat recent.json | jq ".workflow_runs[2].id")" >> "$GITHUB_OUTPUT"
 
     - name: Store 2nd most recent workflow run ID
       id: workflow2
@@ -60,4 +60,3 @@ jobs:
         timestamp=$(date -u)
         git commit -m "Latest logs: ${timestamp}" || exit 0
         git push
-             
