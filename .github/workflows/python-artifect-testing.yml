@@ -1,4 +1,4 @@
-name: Test workflow for artifacts
+name: Get last 2 most recent workflow logs
 
 on:
   workflow_dispatch:
